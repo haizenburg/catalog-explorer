@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import type { Product } from '../types/product';
 import { fetchProductById } from '../api/productsApi';
+import { useFavoritesContext } from '../contexts/FavoritesContext';
 
 export function ProductDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { toggleFavorite, isFavorite } = useFavoritesContext();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -65,6 +67,13 @@ export function ProductDetailPage() {
           <p className={`stock ${product.inStock ? 'in-stock' : 'out-of-stock'}`}>
             {product.inStock ? 'In Stock' : 'Out of Stock'}
           </p>
+
+          <button
+            className={`favorite-btn-large ${isFavorite(product.id) ? 'is-favorite' : ''}`}
+            onClick={() => toggleFavorite(product.id)}
+          >
+            {isFavorite(product.id) ? '❤️ Remove from Favorites' : '🤍 Add to Favorites'}
+          </button>
 
           <div className="tags">
             {product.tags.map(tag => (
