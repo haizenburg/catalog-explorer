@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { FaHeart, FaRegHeart, FaArrowLeft, FaStar } from 'react-icons/fa';
 import type { Product } from '../types/product';
 import { fetchProductById } from '../api/productsApi';
+import { LazyImage } from '../components/LazyImage';
 import { useFavoritesContext } from '../contexts/FavoritesContext';
 
 export function ProductDetailPage() {
@@ -50,20 +52,20 @@ export function ProductDetailPage() {
   return (
     <div className="product-detail-page">
       <button onClick={() => navigate('/')} className="back-button">
-        ← Back to Catalog
+        <FaArrowLeft size={20} /> Back to Catalog
       </button>
 
       <div className="product-detail">
         <div className="product-images">
-          <img src={product.imageUrl} alt={product.name} className="main-image" />
+          <LazyImage src={product.imageUrl} alt={product.name} className="main-image" />
         </div>
 
         <div className="product-details">
           <h1>{product.name}</h1>
           <div className="rating">
-            ⭐ {product.rating} ({product.reviewCount} reviews)
+            <FaStar size={20} /> {product.rating} ({product.reviewCount} reviews)
           </div>
-          <p className="price">${product.price.toFixed(2)} {product.currency}</p>
+          <p className="price">R{product.price.toFixed(2)} {product.currency}</p>
           <p className={`stock ${product.inStock ? 'in-stock' : 'out-of-stock'}`}>
             {product.inStock ? 'In Stock' : 'Out of Stock'}
           </p>
@@ -72,7 +74,8 @@ export function ProductDetailPage() {
             className={`favorite-btn-large ${isFavorite(product.id) ? 'is-favorite' : ''}`}
             onClick={() => toggleFavorite(product.id)}
           >
-            {isFavorite(product.id) ? '❤️ Remove from Favorites' : '🤍 Add to Favorites'}
+            {isFavorite(product.id) ? <FaHeart size={20} /> : <FaRegHeart size={20} />}
+            {isFavorite(product.id) ? ' Remove from Favorites' : ' Add to Favorites'}
           </button>
 
           <div className="tags">
