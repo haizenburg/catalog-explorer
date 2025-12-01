@@ -1,14 +1,28 @@
 import type { Product, ProductFilters } from '../types/product';
 import { mockProducts } from './mockData';
 
-// Simulate network delay
+/**
+ * Products API - Handles product data fetching, filtering, and sorting
+ *
+ * This module provides a mock API layer that simulates real backend behavior.
+ * In production, replace the mock implementation with actual API calls.
+ *
+ * Features:
+ * - Search across name, description, and tags
+ * - Filter by category, tags, and stock availability
+ * - Multiple sort options
+ * - Network delay simulation for realistic UX testing
+ * - Error simulation for testing error handling
+ */
+
+// Simulate network delay for realistic loading states
 const SIMULATE_DELAY = 300; // ms
 
 function delay(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// Simulate network failures (5% chance)
+// Simulate network failures (5% chance) to test error handling
 function shouldSimulateError(): boolean {
   return Math.random() < 0.05;
 }
@@ -22,6 +36,21 @@ export class NetworkError extends Error {
 
 /**
  * Fetch all products with optional filtering and sorting
+ *
+ * @param filters - Optional filters to apply (search, category, tags, stock, sort)
+ * @returns Promise<Product[]> - Filtered and sorted products
+ *
+ * @example
+ * // Get all products in Electronics category
+ * const products = await fetchProducts({ category: 'Electronics' });
+ *
+ * @example
+ * // Search for laptops, in stock only, sorted by price
+ * const products = await fetchProducts({
+ *   search: 'laptop',
+ *   inStock: true,
+ *   sortBy: 'price-asc'
+ * });
  */
 export async function fetchProducts(filters?: ProductFilters): Promise<Product[]> {
   await delay(SIMULATE_DELAY);
