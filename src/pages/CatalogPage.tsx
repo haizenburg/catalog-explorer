@@ -1,9 +1,12 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { FaHeart, FaRegHeart, FaStar } from 'react-icons/fa';
 import type { Product, ProductFilters } from '../types/product';
 import { fetchProducts } from '../api/productsApi';
 import { FilterBar } from '../components/FilterBar';
+import { LazyImage } from '../components/LazyImage';
 import { useFavoritesContext } from '../contexts/FavoritesContext';
+import { useDebounce } from '../hooks/useDebounce';
 
 export function CatalogPage() {
   const navigate = useNavigate();
@@ -16,6 +19,7 @@ export function CatalogPage() {
 
   // Read filters from URL
   const searchQuery = searchParams.get('search') || '';
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const selectedCategory = searchParams.get('category') || '';
   const tagsParam = searchParams.get('tags') || '';
   const selectedTags = useMemo(() => tagsParam.split(',').filter(Boolean), [tagsParam]);
@@ -82,16 +86,16 @@ export function CatalogPage() {
     setSearchParams(new URLSearchParams());
   }
 
-  // Build filters object for API
+  // Build filters object for API (using debounced search query for performance)
   const filters = useMemo(() => {
     const f: ProductFilters = {};
-    if (searchQuery) f.search = searchQuery;
+    if (debouncedSearchQuery) f.search = debouncedSearchQuery;
     if (selectedCategory) f.category = selectedCategory;
     if (selectedTags.length > 0) f.tags = selectedTags;
     if (stockFilter !== undefined) f.inStock = stockFilter;
     if (sortBy) f.sortBy = sortBy as ProductFilters['sortBy'];
     return f;
-  }, [searchQuery, selectedCategory, selectedTags, stockFilter, sortBy]);
+  }, [debouncedSearchQuery, selectedCategory, selectedTags, stockFilter, sortBy]);
 
   useEffect(() => {
     async function loadProducts() {
@@ -149,36 +153,53 @@ export function CatalogPage() {
       <p className="product-count">{products.length} products found</p>
 
       {products.length === 0 ? (
-        <div className="empty-state">
+        <div className="empty-state" role="status" aria-live="polite">
           <p>No products found matching your criteria.</p>
           <button onClick={clearAllFilters}>Clear Filters</button>
         </div>
       ) : (
-        <div className="products-grid">
+        <div className="products-grid" role="list" aria-label="Product list">
           {products.map(product => (
-            <div key={product.id} className="product-card">
+            <article key={product.id} className="product-card" role="listitem">
               <button
                 className={`favorite-btn ${isFavorite(product.id) ? 'is-favorite' : ''}`}
                 onClick={(e) => {
                   e.stopPropagation();
                   toggleFavorite(product.id);
                 }}
-                aria-label={isFavorite(product.id) ? 'Remove from favorites' : 'Add to favorites'}
+                aria-label={`${isFavorite(product.id) ? 'Remove' : 'Add'} ${product.name} ${isFavorite(product.id) ? 'from' : 'to'} favorites`}
+                aria-pressed={isFavorite(product.id)}
               >
-                {isFavorite(product.id) ? '❤️' : '🤍'}
+                {isFavorite(product.id) ? <FaHeart size={20} /> : <FaRegHeart size={20} />}
               </button>
-              <div onClick={() => navigate(`/product/${product.id}`)} className="product-card-content">
-                <img src={product.imageUrl} alt={product.name} />
+              <div
+                onClick={() => navigate(`/product/${product.id}`)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    navigate(`/product/${product.id}`);
+                  }
+                }}
+                className="product-card-content"
+                role="button"
+                tabIndex={0}
+                aria-label={`View details for ${product.name}`}
+              >
+                <LazyImage src={product.imageUrl} alt="" />
                 <h3>{product.name}</h3>
                 <div className="product-info">
-                  <p className="price">${product.price.toFixed(2)}</p>
-                  <p className="rating">⭐ {product.rating} ({product.reviewCount})</p>
+                  <p className="price" aria-label={`Price: ${product.price} rands`}>
+                    R{product.price.toFixed(2)}
+                  </p>
+                  <p className="rating" aria-label={`Rating: ${product.rating} out of 5 stars, ${product.reviewCount} reviews`}>
+                    <FaStar size={16} /> {product.rating} ({product.reviewCount})
+                  </p>
                 </div>
                 <p className={`stock ${product.inStock ? 'in-stock' : 'out-of-stock'}`}>
                   {product.inStock ? 'In Stock' : 'Out of Stock'}
                 </p>
               </div>
-            </div>
+            </article>
           ))}
         </div>
       )}

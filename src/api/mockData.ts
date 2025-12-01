@@ -68,7 +68,7 @@ function generateProducts(): Product[] {
         id,
         name: `${brand} ${baseName}${variant}`,
         price,
-        currency: 'USD',
+        currency: 'ZAR',
         rating,
         reviewCount,
         tags,

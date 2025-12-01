@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FaHeart, FaStar } from 'react-icons/fa';
 import type { Product } from '../types/product';
 import { fetchProductById } from '../api/productsApi';
+import { LazyImage } from '../components/LazyImage';
 import { useFavoritesContext } from '../contexts/FavoritesContext';
 
 export function FavoritesPage() {
@@ -65,14 +67,14 @@ export function FavoritesPage() {
               }}
               aria-label="Remove from favorites"
             >
-              ❤️
+              <FaHeart size={20} />
             </button>
             <div onClick={() => navigate(`/product/${product.id}`)} className="product-card-content">
-              <img src={product.imageUrl} alt={product.name} />
+              <LazyImage src={product.imageUrl} alt={product.name} />
               <h3>{product.name}</h3>
               <div className="product-info">
-                <p className="price">${product.price.toFixed(2)}</p>
-                <p className="rating">⭐ {product.rating} ({product.reviewCount})</p>
+                <p className="price">R{product.price.toFixed(2)}</p>
+                <p className="rating"><FaStar size={16} /> {product.rating} ({product.reviewCount})</p>
               </div>
               <p className={`stock ${product.inStock ? 'in-stock' : 'out-of-stock'}`}>
                 {product.inStock ? 'In Stock' : 'Out of Stock'}
